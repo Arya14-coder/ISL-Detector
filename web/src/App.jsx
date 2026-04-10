@@ -7,7 +7,8 @@ import SidePanel from './components/SidePanel';
 const HISTORY_MIN_CONFIDENCE = 30;     // was 85 — too strict with network latency
 const BUFFER_MIN_CONFIDENCE = 27;      // was 93 — way too strict
 const STABLE_WINDOW_MS = 500;          // was 700 — more responsive
-const CHAR_COOLDOWN_MS = 400;          // was 450
+const CHAR_COOLDOWN_MS = 400;          // Cooldown between different characters
+const REPEAT_COOLDOWN_MS = 2000;       // Repeat delay for same character
 
 function App() {
   const [activeModel, setActiveModel] = useState('RF');
@@ -19,10 +20,12 @@ function App() {
   // Refs always point to the latest value.
   const lastCandidateRef = useRef({ char: null, firstSeenAt: 0 });
   const lastCommittedAtRef = useRef(0);
+  const lastCommittedCharRef = useRef(null);
 
   const handlePrediction = useCallback((char, confidence) => {
     if (!char) {
       lastCandidateRef.current = { char: null, firstSeenAt: 0 };
+      lastCommittedCharRef.current = null;
       return;
     }
 
@@ -51,10 +54,14 @@ function App() {
     }
 
     // Commit to translated text if above buffer threshold and cooldown elapsed
-    if (confidence >= BUFFER_MIN_CONFIDENCE && now - lastCommittedAtRef.current >= CHAR_COOLDOWN_MS) {
+    const cooldown = (char === lastCommittedCharRef.current) ? REPEAT_COOLDOWN_MS : CHAR_COOLDOWN_MS;
+
+    if (confidence >= BUFFER_MIN_CONFIDENCE && (now - lastCommittedAtRef.current) >= cooldown) {
       setTranslatedText((prev) => prev + char);
       lastCommittedAtRef.current = now;
-      lastCandidateRef.current = { char: null, firstSeenAt: 0 };
+      lastCommittedCharRef.current = char;
+      // NOTE: We don't reset lastCandidateRef here anymore. 
+      // This keeps the stability window open while the character is held.
     }
   }, []);
 
