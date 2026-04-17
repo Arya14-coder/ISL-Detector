@@ -1,2 +1,4 @@
 data/
 venv/
+web/dist/
+web/node_modules/
