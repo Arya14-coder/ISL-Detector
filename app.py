@@ -111,4 +111,7 @@ def health():
 if __name__ == '__main__':
     logger.info(f"Models loaded: {list(models.keys())}")
     logger.info(f"Feature vector size: {FEATURES_PER_HAND * 2}")
-    app.run(port=5000, debug=True)
+    
+    # Render and other cloud platforms provide the PORT environment variable
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)

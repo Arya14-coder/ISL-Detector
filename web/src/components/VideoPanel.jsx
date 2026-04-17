@@ -17,7 +17,7 @@ const HAND_CONNECTIONS = [
 const MEDIAPIPE_WASM_VERSION = "0.10.34";
 const MEDIAPIPE_WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_WASM_VERSION}/wasm`;
 
-const BACKEND_URL = 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const INFERENCE_INTERVAL_MS = 100;
 const FEATURES_PER_HAND = 63;
 
