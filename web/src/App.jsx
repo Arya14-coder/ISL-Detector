@@ -6,8 +6,8 @@ import SidePanel from './components/SidePanel';
 // ── Tuned thresholds (lowered from original overly-strict values) ────────────
 const HISTORY_MIN_CONFIDENCE = 30;     // was 85 — too strict with network latency
 const BUFFER_MIN_CONFIDENCE = 27;      // was 93 — way too strict
-const STABLE_WINDOW_MS = 500;          // was 700 — more responsive
-const CHAR_COOLDOWN_MS = 400;          // Cooldown between different characters
+const STABLE_WINDOW_MS = 300;          // was 500 — even more responsive
+const CHAR_COOLDOWN_MS = 300;          // was 400 — faster typing
 const REPEAT_COOLDOWN_MS = 2000;       // Repeat delay for same character
 
 function App() {

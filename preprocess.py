@@ -51,15 +51,24 @@ def is_image(filename: str) -> bool:
 
 
 def extract_hand_features(hand_landmarks) -> list:
-    """Return a 63-element normalized landmark list for one hand."""
+    """Return a 63-element normalized landmark list for one hand (scale-invariant)."""
     x_vals = [lm.x for lm in hand_landmarks]
     y_vals = [lm.y for lm in hand_landmarks]
-    min_x, min_y = min(x_vals), min(y_vals)
+    
+    min_x, max_x = min(x_vals), max(x_vals)
+    min_y, max_y = min(y_vals), max(y_vals)
+    
+    width = max_x - min_x
+    height = max_y - min_y
+    # Use diagonal for scale-invariance
+    diagonal = (width**2 + height**2)**0.5
+    if diagonal < 1e-6: diagonal = 1.0
+
     features = []
     for lm in hand_landmarks:
-        features.append(lm.x - min_x)
-        features.append(lm.y - min_y)
-        features.append(lm.z)
+        features.append((lm.x - min_x) / diagonal)
+        features.append((lm.y - min_y) / diagonal)
+        features.append(lm.z / diagonal)
     return features
 
 # ── Main loop ──────────────────────────────────────────────────────────────────

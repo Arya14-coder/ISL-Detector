@@ -18,7 +18,7 @@ const MEDIAPIPE_WASM_VERSION = "0.10.34";
 const MEDIAPIPE_WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_WASM_VERSION}/wasm`;
 
 const BACKEND_URL = 'http://localhost:5000';
-const INFERENCE_INTERVAL_MS = 150;
+const INFERENCE_INTERVAL_MS = 100;
 const FEATURES_PER_HAND = 63;
 
 const VideoPanel = ({ activeModel = 'RF', onPrediction }) => {
@@ -162,18 +162,25 @@ const VideoPanel = ({ activeModel = 'RF', onPrediction }) => {
       const side = rawSide === "Left" ? "Right" : "Left";
 
       // FLIP x-coordinates to simulate cv2.flip(frame, 1)
-      // After flip: x_flipped = 1.0 - x
-      // Normalize: x_flipped - min(x_flipped) = (1-x) - (1-max_x) = max_x - x
       const xs = lms.map(l => l.x);
       const ys = lms.map(l => l.y);
-      const maxX = Math.max(...xs);   // needed for flipped normalization
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
       const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+
+      const width = maxX - minX;
+      const height = maxY - minY;
+      const diagonal = Math.sqrt(width * width + height * height) || 1.0;
 
       const features = [];
       for (const l of lms) {
-        features.push(maxX - l.x);    // flipped & normalized x (equivalent to camera_test.py)
-        features.push(l.y - minY);    // normalized y (same as camera_test.py)
-        features.push(l.z);           // z unchanged
+        // After flip: x_flipped = 1.0 - x
+        // min_x_flipped = 1.0 - max_x
+        // Normalization: (x_flipped - min_x_flipped) / diagonal = (1-x - (1-maxX)) / diagonal = (maxX - x) / diagonal
+        features.push((maxX - l.x) / diagonal);
+        features.push((l.y - minY) / diagonal);
+        features.push(l.z / diagonal);
       }
 
       if (features.length === FEATURES_PER_HAND) {
